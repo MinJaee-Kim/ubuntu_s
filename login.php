@@ -33,7 +33,7 @@ error_reporting(E_ALL);
 
     $response["token_value"] = hashing($response);
 
-    $statement = mysqli_prepare($con, "INSERT INTO token(token_value, seq, is_using, create_date, expire_date, is_auto_log) VALUES (?,?,'Y',?,?,?)");
+    $statement = mysqli_prepare($con, "INSERT INTO token(token_value, user_id, create_date, expire_date, is_auto_log) VALUES (?,?,?,?,?)");
     mysqli_stmt_bind_param($statement, "siiii", $response["token_value"], $response["user_id"], $response["cre"],$response["exp"], $isAutoLog);
     mysqli_stmt_execute($statement) or die('this user is already in use') ;
 

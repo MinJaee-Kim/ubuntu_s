@@ -10,32 +10,31 @@ $con = $database->getConnection();
 
 $header = apache_request_headers();
 foreach ($header as $headers => $value) {
-	if($headers == 'token')
-	{
-		$jwt = $value;
-	}
+        if($headers == 'token')
+        {
+                $jwt = $value;
+        }
 }
 
 $tokendata = array();
 $tokendata = dehashing($jwt);
+$response = array();
+
+$response["success"] = false;
 
 if($tokendata["status"] == 'success')
 {
-	$response = array();
-
         $user_id = $tokendata["jwt_payload"]["user_id"];
-        $bo_title = $_POST["bo_title"];
-        $bo_cont = $_POST["bo_cont"];
+        $board_id = $_POST["board_id"];
+        $co_cont = $_POST["co_cont"];
 
-        $statement = mysqli_prepare($con, "INSERT INTO board(user_id, bo_title, bo_cont, bo_date) VALUES (?,?,?,NOW())");
-        mysqli_stmt_bind_param($statement, "iss", $user_id, $bo_title, $bo_cont);
+        $statement = mysqli_prepare($con, "INSERT INTO board_comment(board_id, user_id, co_cont, co_date) VALUES (?,?,?,NOW())");
+        mysqli_stmt_bind_param($statement, "iis", $board_id, $user_id, $co_cont);
         mysqli_stmt_execute($statement) or die('this user is already in use') ;
 
-        $response["board_id"] = mysqli_insert_id($con);
         mysqli_commit($con);
 
         $response["success"] = true;
-
-	echo json_encode($response);
 }
+echo json_encode($response);
 ?>

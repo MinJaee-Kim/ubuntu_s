@@ -1,6 +1,6 @@
 <?php
 $uploads_dir = '../image';
-$dbuploads_dir = 'http://150.230.131.84/image';
+$dbuploads_dir = 'http://150.230.136.110/image';
 
 $allowed_ext = array('jpg','jpeg','png','gif');
 

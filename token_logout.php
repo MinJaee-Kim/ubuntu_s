@@ -7,54 +7,56 @@ include 'dbcon.php';
 $database = new Database();
 $con = $database->getConnection();
 
-$destroy = $_POST["destroy"];    
+$destroy = $_POST["destroy"];
 
 $header = apache_request_headers();
 foreach ($header as $headers => $value) {
-	if($headers == 'token')
-	{
-		$jwt = $value;
-	}
+        if($headers == 'token')
+        {
+                $jwt = $value;
+        }
 }
 
 $response = array();
+
+$response["token_value"] = $jwt;
 $response["success"] = false;
-    
+
+$statement = mysqli_prepare($con, "SELECT user_id, is_auto_log FROM token WHERE token_value = ?");
+mysqli_stmt_bind_param($statement, "s", $jwt);
+mysqli_stmt_execute($statement);
+
+mysqli_stmt_store_result($statement);
+mysqli_stmt_bind_result($statement, $user_id, $is_auto_log);
+
+while(mysqli_stmt_fetch($statement))
+{
+	$response["user_id"] = $user_id;
+	$response["is_auto_log"] = $is_auto_log;
+}
+
 if($destroy == 1)
 {
-    	$statement = mysqli_prepare($con, "SELECT is_auto_log FROM token WHERE token = ?");
-        mysqli_stmt_bind_param($statement, "s", $jwt);
-        mysqli_stmt_execute($statement);
+        if($response["is_auto_log"] == 0)
+        {
+                $statement = mysqli_prepare($con, "DELETE FROM token WHERE token_value = ?");
+                mysqli_stmt_bind_param($statement, "s", $jwt);
+                mysqli_stmt_execute($statement) or die('this user is already in use') ;
 
-        mysqli_stmt_store_result($statement);
-        mysqli_stmt_bind_result($statement, $is_auto_log);
+                mysqli_commit($con);
 
-        $tokendata = array();
-
-	while(mysqli_stmt_fetch($statement)) 
-	{
-                $tokendata["is_auto_log"] = $is_auto_log;
-	}
-	if($tokendata["is_auto_log"] == 0)
-	{
-	    	$statement = mysqli_prepare($con, "UPDATE token SET isusing = 'N' where token = ? and is_auto_log = 0");
-	    	mysqli_stmt_bind_param($statement, "s", $jwt);
-	    	mysqli_stmt_execute($statement) or die('this user is already in use') ;
-
-	    	mysqli_commit($con);
-
-	    	$response["success"] = true;
-	}
+                $response["success"] = true;
+        }
 }
 else
 {
-	$statement = mysqli_prepare($con, "UPDATE token SET isusing = 'N', is_auto_log = 0 where token = ?");
-    	mysqli_stmt_bind_param($statement, "s", $jwt);
-    	mysqli_stmt_execute($statement) or die('this user is already in use') ;
+        $statement = mysqli_prepare($con, "DELETE FROM token WHERE token_value = ?");
+        mysqli_stmt_bind_param($statement, "s", $jwt);
+        mysqli_stmt_execute($statement) or die('this user is already in use') ;
 
-    	mysqli_commit($con);
+        mysqli_commit($con);
 
-    	$response["success"] = true;
+        $response["success"] = true;
 }
 echo json_encode($response);
 ?>

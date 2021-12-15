@@ -18,6 +18,6 @@ $photo_index = $_POST["photo_index"];
         mysqli_commit($con);
 	$response = array();
 	    $response["success"] = true;
-
-	    echo json_encode($response);
+	
+	echo json_encode($response);
 ?>
